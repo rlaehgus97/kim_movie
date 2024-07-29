@@ -6,7 +6,11 @@ from airflow import DAG
 
 from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator
-from airflow.operators.python import PythonOperator
+from airflow.operators.python import (
+    PythonOperator,
+    PythonVirtualenvOperator,
+    is_venv_installed,
+)
 
 from airflow.models import Variable
 
@@ -29,6 +33,7 @@ with DAG(
     catchup=True,
     tags=['movie', 'db'],
 ) as dag:
+
     def get_data(ds, **kwargs):
         print(ds)
         print(kwargs)
@@ -36,9 +41,15 @@ with DAG(
         print(f"ds_nodash => {kwargs['ds_nodash']}")
         print(f"kwargs type => {type(kwargs)}")
         print("*" * 20)
-        from movie.api.call import gen_url, req, get_key, req2list, list2df, save2df
+        from movie.api.call import get_key, save2df
+        # pip install git+https://github.com/rlaehgus97/kim_mov.git@0.2/api
+        # need to run the code above in virtualenv named "air"
+        # without the code above, we can't attain the api key below
         key = get_key()
         print(f"MOVIE_API_KEY => {key}")
+        YYYYMMDD = kwargs['ds_nodash']
+        df = save2df(YYYYMMDD)
+        print(df.head(5))
         
 
 
@@ -54,12 +65,14 @@ with DAG(
 
     run_this = PythonOperator(
             task_id="print_the_context", 
-            python_callable=print_context
+            python_callable=print_context,
     )
     
-    get_data = PythonOperator(
+    get_data = PythonVirtualenvOperator(
         task_id="get_data",
-        python_callable=get_data
+        python_callable=get_data,
+        requirements=["git+https://github.com/rlaehgus97/kim_mov.git@0.2/api"], # automatically uninstalled and installed when dag is executed
+        system_site_packages=False,
     )
 
     save_data = BashOperator(
