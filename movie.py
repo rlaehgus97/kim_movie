@@ -39,7 +39,7 @@ with DAG(
         # ld = kwargs['ds_nodash']
         import os
         home_dir = os.path.expanduser("~")
-        path = os.path.join(home_dir, f"/tmp/test_parquet/load_dt={ds_nodash}")
+        path = os.path.join(home_dir, f"tmp/test_parquet/load_dt={ds_nodash}")
         if os.path.exists(path):
             return "rm.dir"
         else:
