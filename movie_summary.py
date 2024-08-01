@@ -32,7 +32,6 @@ with DAG(
     tags=['api', 'movie', 'amt'],
 ) as dag:
 
-
     task_start = EmptyOperator(task_id='start')
     task_end = EmptyOperator(task_id='end')
 
