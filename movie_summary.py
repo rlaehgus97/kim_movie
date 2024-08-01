@@ -32,8 +32,14 @@ with DAG(
     tags=['api', 'movie', 'amt'],
 ) as dag:
 
-    task_start = EmptyOperator(task_id='start')
-    task_end = EmptyOperator(task_id='end')
+    def gen_emp(*ids):
+        tasks = []
+        for id in ids:
+            task = EmptyOperator(task_id=id)
+            tasks.append(task)
+        return tasks
+
+    start, end = gen_emp('start', 'end')
 
     apply_type = EmptyOperator(
             task_id = 'apply.type',
@@ -50,4 +56,5 @@ with DAG(
     summary_df = EmptyOperator(
             task_id = 'summary.df',
             )
-    task_start >> apply_type >> merge_df >> df_dup >> summary_df >> task_end
+
+    start >> apply_type >> merge_df >> df_dup >> summary_df >> end
